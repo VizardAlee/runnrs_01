@@ -1,0 +1,8 @@
+<%= turbo_stream.replace "store_form", partial: "stores/new", locals: { store: Store.new } %>
+<%= turbo_stream.append "flash_messages", partial: "layouts/flash_messages" %>
+
+<% if @store.persisted? %>
+  <%= turbo_stream.replace "store_details",
+                          partial: "stores/store_details",
+                          locals: { store: @store } %>
+<% end %>
