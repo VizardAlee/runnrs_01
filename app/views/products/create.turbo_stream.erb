@@ -1,0 +1,9 @@
+<%= turbo_stream.replace "new_product_form",
+                        partial: "products/form", 
+                        locals: { store: @store, product: Product.new } %>
+
+<%= turbo_stream.append "flash_messages", partial: "layouts/flash_messages" %>
+
+<% if @product.persisted? %> 
+  <%= turbo_stream.redirect_to store_product_path(@store, @product) %> 
+<% end %>

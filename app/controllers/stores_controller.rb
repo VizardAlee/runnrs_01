@@ -19,8 +19,8 @@ class StoresController < ApplicationController
     else
       @store = current_user.build_store(store_params)
       if @store.save
-        current_user.update(role: :store_owner)
-
+        current_user.update(role: :store_owner) 
+  
         respond_to do |format|
           format.turbo_stream do
             render turbo_stream: turbo_stream.replace(
@@ -29,15 +29,14 @@ class StoresController < ApplicationController
               locals: { store: Store.new }
             )
             flash.now[:notice] = 'Store was successfully created.'
-
-            # Redirect using Turbo Stream
+            
             turbo_stream.update "store_details", partial: "stores/store_details", locals: { store: @store }
           end
           format.html { redirect_to @store, notice: 'Store was successfully created.', data: { turbo: false } } 
         end
       else
         respond_to do |format|
-          format.turbo_stream do
+          format.turbo_stream do 
             render turbo_stream: turbo_stream.replace(
               "store_form", 
               partial: "stores/new", 
@@ -49,6 +48,7 @@ class StoresController < ApplicationController
       end
     end
   end
+  
 
   def show
     @store = Store.find(params[:id])

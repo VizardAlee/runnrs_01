@@ -2,7 +2,11 @@ Rails.application.routes.draw do
   root 'home#index'
   devise_for :users
   resources :stores do
-    resources :products
+    resources :products do
+      member do
+        patch :add_quantity
+      end
+    end
   end
   
   get 'test_pages/home'

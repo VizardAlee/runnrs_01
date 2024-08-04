@@ -1,0 +1,9 @@
+<%= turbo_stream.append "flash_messages", partial: "layouts/flash_messages" %>
+
+<%= turbo_stream.update "product_quantity" do %>
+  <% if @product.quantity.present? %>
+    <p class="text-gray-600 mt-4">Quantity: <%= @product.quantity %></p>
+  <% else %>
+    <p class="text-gray-600 mt-4">Quantity: Not specified</p> 
+  <% end %>
+<% end %>

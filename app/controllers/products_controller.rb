@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   before_action :set_store
-  before_action :set_product, only: %i[ show edit update destroy ]
+  before_action :set_product, only: %i[ show edit update destroy add_quantity]
 
   def index
     @products = Product.all
@@ -12,16 +12,48 @@ class ProductsController < ApplicationController
 
   def create
     @product = @store.products.build(product_params)
-    
+
     if @product.save
-      redirect_to @store, notice: 'Product was successfully created.'
+      respond_to do |format|
+        format.turbo_stream do 
+          # Replace the form with a new, empty form
+          render turbo_stream: turbo_stream.replace(
+            "new_product_form",
+            partial: "products/form", 
+            locals: { store: @store, product: Product.new } 
+          )
+
+          # Append a flash message to indicate success
+          turbo_stream.append "flash_messages", partial: "layouts/flash_messages"
+        end
+        
+        # Redirect to the product's show page using Turbo Stream
+        format.turbo_stream { turbo_stream.redirect_to store_product_path(@store, @product) } 
+        format.html { redirect_to [@store, @product], notice: 'Product was successfully created.', data: { turbo: false } }
+      end
     else
-      render :new, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream do 
+          render turbo_stream: turbo_stream.replace(
+            "new_product_form", 
+            partial: "products/form", 
+            locals: { store: @store, product: @product }
+          )
+        end
+        format.html { render :new, status: :unprocessable_entity }
+      end
     end
   end
 
+  
+  
+  
+
   def show
+    @store = Store.find(params[:store_id])
+    @product = @store.products.find(params[:id])
   end
+  
 
   def edit
   end
@@ -37,6 +69,21 @@ class ProductsController < ApplicationController
   def destroy
   end
 
+  def add_quantity
+    @product = @store.products.find(params[:id])
+    new_quantity = params[:product][:quantity].to_i
+    puts "Params: #{params.inspect}" 
+    puts "New Quantity: #{new_quantity}"
+  
+    if @product.update(quantity: @product.quantity.to_i + new_quantity)
+      puts "Update successful!"
+      redirect_to [@store, @product], notice: 'Quantity was successfully updated.'
+    else
+      puts "Update failed! Errors: #{@product.errors.full_messages}"
+      render :show, status: :unprocessable_entity 
+    end
+  end
+
   private
 
   def set_store
@@ -48,6 +95,7 @@ class ProductsController < ApplicationController
   end
 
   def product_params
-    params.require(:product).permit(:name, :description, :price, :image)
+    params.require(:product).permit(:name, :description, :price, :image, :quantity)
   end
+
 end
