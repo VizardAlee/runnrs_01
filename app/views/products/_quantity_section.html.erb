@@ -1,0 +1,11 @@
+<div id="quantity_section" data-product-variations-target="quantitySection">
+  <% if product.quantity.present? %>
+    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: <%= product.quantity %></p>
+  <% else %>
+    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: Not specified</p> 
+  <% end %>
+
+  <% if current_user == store.user && !product.has_variations? %>
+    <%= render 'add_quantity_form', store: store, product: product %>
+  <% end %>
+</div>

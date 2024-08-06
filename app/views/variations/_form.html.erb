@@ -1,0 +1,33 @@
+<% if @variation.errors.any? %>
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <strong class="font-bold">The following errors prevented the variation from being saved:</strong>
+    <ul>
+      <% @variation.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% form_method = @variation.new_record? ? :post : :patch %>
+
+<%= form_with(model: [@store, @product, @variation], url: store_product_variation_path(@store, @product, @variation), method: form_method) do |form| %>
+  <div class="mb-4">
+    <%= form.label :name, class: "block text-gray-700 text-sm font-bold mb-2" %>
+    <%= form.text_field :name, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :price, class: "block text-gray-700 text-sm font-bold mb-2" %>
+    <%= form.number_field :price, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :quantity, class: "block text-gray-700 text-sm font-bold mb-2" %>
+    <%= form.number_field :quantity, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+  </div>
+
+  <% action_text = @variation.new_record? ? "Create Variation" : "Update Variation" %> 
+  <%= form.submit action_text, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
+
+<% end %>

@@ -3,12 +3,17 @@ Rails.application.routes.draw do
   devise_for :users
   resources :stores do
     resources :products do
+      resources :variations
       member do
         patch :add_quantity
       end
     end
   end
-  
+
+  post 'shopping_carts/add_item', to: 'shopping_carts#add_item', as: 'shopping_carts_add_item'
+
+  resource :shopping_cart, only: [:show]
+
   get 'test_pages/home'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
