@@ -22,7 +22,7 @@
             <td class="border px-4 py-2"><%= number_to_currency(item.price) %></td>
             <td class="border px-4 py-2"><%= number_to_currency(item.total_price) %></td>
             <td class="border px-4 py-2">
-              <%= button_to "Remove", shopping_cart_line_item_path(@cart, item), method: :delete, class: "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
+              <%= button_to "Remove", shopping_cart_line_item_path(item), method: :delete, class: "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
             </td>
           </tr>
         <% end %>

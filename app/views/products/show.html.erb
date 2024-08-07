@@ -20,21 +20,24 @@
     <% end %>
   </ul>
 
-  </ul>
-
   <% if current_user == @store.user %>
     <%= link_to "Add New Variation", new_store_product_variation_path(@store, @product), class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
   <% else %>
     <%# Add to Cart form with variation selection (for other users) %>
-    <%= form_with url: shopping_carts_add_item_path, method: :post do |form| %>
+    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %> 
       <%= form.hidden_field :product_id, value: @product.id %>
       <%= form.select :variation_id, @product.variations.map { |v| [v.name, v.id] }, {}, class: "border rounded mb-2" %>
+      <div class="mb-4">
+        <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+        <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      </div>
 
       <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
     <% end %>
   <% end %>
 
 <% else %>
+  <%# Product without variations %>
   <p class="text-green-600 font-bold text-2xl">Price: <%= number_to_currency(@product.price, unit: "₦") %></p>
 
   <% if @product.quantity.present? %>
@@ -43,25 +46,26 @@
     <p class="text-gray-600 mt-4" id="product_quantity">Quantity: Not specified</p> 
   <% end %>
 
-  <% if current_user == @store.user %>
-    <%= render 'add_quantity_form', store: @store, product: @product %>
-  <% else %>
-    <%# Add to Cart form without variation selection (if no variations exist) %>
-    <% if @product.variations.any? %>
-      <%= form_with url: shopping_carts_add_item_path, method: :post do |form| %>
-        <%= form.hidden_field :product_id, value: @product.id %>
-        <%= form.hidden_field :variation_id, value: @product.variations.first.id %> 
+  <% if current_user != @store.user %> <%# Only show to non-store owners %>
+    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %> 
+      <%= form.hidden_field :product_id, value: @product.id %>
+      
+      <div class="mb-4"> 
+        <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+        <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      </div>
 
-        <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-      <% end %>
-    <% else %>
-      <p class= "text-red-500">No variations available for this product yet</p>
+      <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
     <% end %>
   <% end %>
-<% end %>
+<% end %> 
 
 <% if @product.image.attached? %>
   <div class="mt-4">
     <%= image_tag @product.image, class: "w-64 h-64 object-cover rounded-lg shadow-md" %>
   </div>
+<% end %>
+
+<% if current_user == @store.user %>
+  <%= render 'add_quantity_form', store: @store, product: @product %>
 <% end %>

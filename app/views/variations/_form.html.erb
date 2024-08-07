@@ -11,7 +11,10 @@
 
 <% form_method = @variation.new_record? ? :post : :patch %>
 
-<%= form_with(model: [@store, @product, @variation], url: store_product_variation_path(@store, @product, @variation), method: form_method) do |form| %>
+<%# Use store_product_variations_path for new variations, and the full path for existing ones %>
+<% form_url = @variation.new_record? ? store_product_variations_path(@store, @product) : store_product_variation_path(@store, @product, @variation) %>
+
+<%= form_with(model: [@store, @product, @variation], url: form_url, method: form_method) do |form| %>
   <div class="mb-4">
     <%= form.label :name, class: "block text-gray-700 text-sm font-bold mb-2" %>
     <%= form.text_field :name, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>

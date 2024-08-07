@@ -12,10 +12,15 @@ Rails.application.routes.draw do
 
   post 'shopping_carts/add_item', to: 'shopping_carts#add_item', as: 'shopping_carts_add_item'
 
-  resource :shopping_cart, only: [:show]
+  resource :shopping_cart, only: [:show] do
+    resources :line_items, only: [:create, :destroy]
+  end
+
+  resources :line_items, only: [:create] 
 
   get 'test_pages/home'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  get 'checkout', to: 'checkouts#new', as: 'checkout' 
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
