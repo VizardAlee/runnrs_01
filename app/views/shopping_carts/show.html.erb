@@ -17,10 +17,10 @@
         <% @cart.line_items.each do |item| %>
           <tr>
             <td class="border px-4 py-2"><%= item.product.name %></td>
-            <td class="border px-4 py-2"><%= item.variation ? item.variation.name : "No Variation" %></td>
+            <td class="border px-4 py-2"><%= item.variation&.name || 'N/A' %></td> 
             <td class="border px-4 py-2"><%= item.quantity %></td>
-            <td class="border px-4 py-2"><%= number_to_currency(item.price) %></td>
-            <td class="border px-4 py-2"><%= number_to_currency(item.total_price) %></td>
+            <td class="border px-4 py-2"><%= number_to_currency(item.price, unit: "₦") %></td>
+            <td class="border px-4 py-2"><%= number_to_currency(item.total_price, unit: "₦") %></td> 
             <td class="border px-4 py-2">
               <%= button_to "Remove", shopping_cart_line_item_path(item), method: :delete, class: "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
             </td>
@@ -30,8 +30,8 @@
     </table>
 
     <div class="mt-5">
-      <p class="text-lg font-bold">Subtotal: <%= number_to_currency(@cart.subtotal) %></p>
-      <p class="text-lg font-bold">Total: <%= number_to_currency(@cart.total) %></p>
+      <p class="text-lg font-bold">Subtotal: <%= number_to_currency(@cart.subtotal, unit: "₦") %></p>
+      <p class="text-lg font-bold">Total: <%= number_to_currency(@cart.total, unit: "₦") %></p>
 
       <%= link_to "Proceed to Checkout", checkout_path(@cart), class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
     </div>
