@@ -1,0 +1,32 @@
+<h1>Order Confirmation</h1>
+
+<p>Thank you for your order!</p>
+
+<h2>Order Details</h2>
+<p><strong>Order Number:</strong> <%= @order.id %></p> 
+<p><strong>Order Date:</strong> <%= @order.created_at.to_formatted_s(:long) %></p>
+
+<h3>Items</h3>
+<ul>
+  <% @order.shopping_cart.line_items.each do |item| %>
+    <li>
+      <%= item.product.name %> 
+      <% if item.variation %>
+        (<%= item.variation.name %>)
+      <% end %>
+      - Quantity: <%= item.quantity %> - 
+      Price: <%= number_to_currency(item.price, unit: "₦") %>
+    </li>
+  <% end %>
+</ul>
+
+<p><strong>Total:</strong> <%= number_to_currency(@order.total, unit: "₦") %></p>
+
+<h3>Shipping Address</h3>
+<p><%= @order.shipping_address %></p>
+
+<h3>Billing Address</h3>
+<p><%= @order.billing_address %></p>
+
+<h3>Payment Method</h3>
+<p><%= @order.payment_method %></p>

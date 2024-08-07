@@ -18,9 +18,11 @@ Rails.application.routes.draw do
 
   resources :line_items, only: [:create] 
 
+  resources :orders
   get 'test_pages/home'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   get 'checkout', to: 'checkouts#new', as: 'checkout' 
+  post 'checkout', to: 'checkouts#create' # Add this line for the create action
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
