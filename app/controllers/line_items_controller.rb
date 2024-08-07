@@ -3,6 +3,11 @@ class LineItemsController < ApplicationController
     @cart = current_cart
     product = Product.find(params[:product_id])
     variation = Variation.find_by(id: params[:variation_id]) if params[:variation_id]
+
+    # if !product.has_variations?
+    #   params[:line_items][:variation_id] = nil 
+    # end
+
     quantity = params[:quantity].to_i
 
     # Ensure quantity is valid

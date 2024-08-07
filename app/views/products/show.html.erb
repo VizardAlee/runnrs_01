@@ -50,6 +50,9 @@
     <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %> 
       <%= form.hidden_field :product_id, value: @product.id %>
       
+      <%= form.fields_for :line_item, {} do |line_item_fields| %>
+      <% end %>
+      
       <div class="mb-4"> 
         <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
         <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>

@@ -17,7 +17,7 @@
         <% @cart.line_items.each do |item| %>
           <tr>
             <td class="border px-4 py-2"><%= item.product.name %></td>
-            <td class="border px-4 py-2"><%= item.variation.name %></td>
+            <td class="border px-4 py-2"><%= item.variation ? item.variation.name : "No Variation" %></td>
             <td class="border px-4 py-2"><%= item.quantity %></td>
             <td class="border px-4 py-2"><%= number_to_currency(item.price) %></td>
             <td class="border px-4 py-2"><%= number_to_currency(item.total_price) %></td>
