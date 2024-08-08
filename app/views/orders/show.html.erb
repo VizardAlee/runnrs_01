@@ -1,0 +1,36 @@
+<div class="container mx-auto mt-10">
+  <h1 class="text-2xl font-bold mb-5">Order #<%= @order.id %></h1>
+
+  <p><strong>Customer Email:</strong> <%= @order.email %></p>
+  <p><strong>Placed At:</strong> <%= @order.created_at.to_formatted_s(:long) %></p>
+  <p><strong>Status:</strong> <%= @order.status %></p>
+
+  <h2>Items</h2>
+  <ul>
+    <% @order.shopping_cart.line_items.each do |item| %>
+      <li>
+        <%= item.product.name %> 
+        <% if item.variation %>
+          (<%= item.variation.name %>)
+        <% end %>
+        - Quantity: <%= item.quantity %> - 
+        Price: <%= number_to_currency(item.price, unit: "₦") %>
+      </li>
+    <% end %>
+  </ul>
+
+  <p><strong>Total:</strong> <%= number_to_currency(@order.total, unit: "₦") %></p>
+
+  <h2>Shipping Address</h2>
+  <p><%= @order.shipping_address %></p>
+
+  <h2>Billing Address</h2>
+  <p><%= @order.billing_address %></p>
+
+  <h2>Payment Method</h2>
+  <p><%= @order.payment_method %></p>
+
+  <% if @order.status == 'unfulfilled' && current_user == @order.shopping_cart.store.user %>
+    <%= button_to "Mark as Fulfilled", order_path(@order), method: :patch, params: { order: { status: 'fulfilled' } }, class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
+  <% end %>
+</div>

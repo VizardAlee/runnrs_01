@@ -3,12 +3,13 @@
     <% if current_user.store_owner? %>
       <p class="text-lg font-semibold mb-2">Welcome, <%= current_user.name %>!</p> 
       <%= link_to 'View your store', store_path(current_user.store), class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+      <%= button_to "View Orders", orders_path, method: :get, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
     <% else %>
       <p class="text-lg font-semibold">Welcome, <%= current_user.name %>!</p>
       <%= link_to 'Create your store', new_store_path, class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
-    <% end %>
-  </div>
-<% else %>
+    <% end %> <%# Close the if current_user.store_owner? block here %>
+  </div> 
+<% else %> <%# This 'else' now corresponds to the 'if user_signed_in?' block %>
   <div class="flex flex-col items-center space-y-4">
     <h2 class="text-2xl font-bold">Welcome to the Marketplace!</h2>
     <p class="text-gray-600">Discover unique products from our talented vendors.</p>
@@ -34,4 +35,4 @@
       <% end %>
     </div>
   <% end %>
-<% end %>
+<% end %> <%# Close the 'if user_signed_in?' block here %>

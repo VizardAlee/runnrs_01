@@ -2,6 +2,7 @@ class OrdersController < ApplicationController
   def create
     @cart = current_cart
     @order = Order.new(order_params)
+    @order.status = 'unfulfilled'
     @order.user = current_user if user_signed_in? # Associate order with user if logged in
     @order.shopping_cart = @cart
     @order.total = @cart.total
@@ -42,6 +43,20 @@ class OrdersController < ApplicationController
       flash.now[:alert] = "An error occurred during checkout. Please try again later."
       render :new
     end
+  end
+
+  def index
+    @orders = current_user.store.products.flat_map(&:orders).select { |order| order.status == 'unfulfilled' }
+  end
+
+  def show
+    @order = Order.find(params[:id])
+  end
+
+  def update
+    @order = Order.find(params[:id])
+    @order.update(status: 'fulfilled')
+    redirect_to orders_path, notice: 'Order marked as fulfilled.'
   end
 
   private

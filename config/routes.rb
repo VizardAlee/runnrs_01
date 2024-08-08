@@ -17,8 +17,8 @@ Rails.application.routes.draw do
   end
 
   resources :line_items, only: [:create] 
-
   resources :orders
+  resources :orders, only: [:index, :show, :update]
   get 'test_pages/home'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   get 'checkout', to: 'checkouts#new', as: 'checkout' 

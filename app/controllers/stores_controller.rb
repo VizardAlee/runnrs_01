@@ -6,11 +6,7 @@ class StoresController < ApplicationController
   end
 
   def index
-    if current_user && current_user.store
-      redirect_to current_user.store
-    else
-      redirect_to root_path # Or another appropriate page
-    end
+    @orders = current_user.store.orders.where(status: 'unfulfilled') 
   end
 
   def create
@@ -49,6 +45,10 @@ class StoresController < ApplicationController
     end
   end
   
+  def dashboard
+    @store = current_user.store # Assuming the user has only one store for now
+    # You can add other relevant data for the dashboard here
+  end
 
   def show
     @store = Store.find(params[:id])
