@@ -12,14 +12,24 @@ class CheckoutsController < ApplicationController
     @order.total = @cart.total 
 
     if @order.save
-      # Placeholder for payment processing (you'll implement this later)
-      # ... (e.g., integrate with Paystack or Flutterwave)
+      # Dummy payment processing (simulate success)
+      sleep(2) # Simulate a short delay
 
       @cart.update(status: "checked_out")
-      # Send confirmation email
-      # ... 
+      @cart.line_items.each do |line_item|
+        if line_item.variation
+          line_item.variation.update(quantity: line_item.variation.quantity - line_item.quantity) 
+        else
+          line_item.product.update(quantity: line_item.product.quantity - line_item.quantity)
+        end
+      end
 
-      redirect_to order_confirmation_path(@order), notice: 'Order placed successfully!'
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace('cart', partial: 'orders/order_confirmation', locals: { order: @order }) 
+        }
+        format.html { redirect_to root_path, notice: 'Order placed successfully!' } 
+      end
     else
       render :new
     end
