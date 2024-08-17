@@ -4,35 +4,106 @@
       <p class="text-lg font-semibold mb-2">Welcome, <%= current_user.name %>!</p> 
       <%= link_to 'View your store', store_path(current_user.store), class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
       <%= button_to "View Orders", orders_path, method: :get, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+      
+      <% if @chart_data.any? %>
+        <h2 class="text-2xl font-semibold mt-8">Income Chart</h2>
+        <div class="w-full h-300" id="chartdiv">
+          <canvas></canvas>
+        </div>       
+
+        <%# Embed the chart data as JSON in a script tag %>
+        <%= content_tag :script, @chart_data.to_json.html_safe, type: 'application/json', id: 'chart-data' %>     
+      <% end %>
+      
+      <h2 class="text-2xl font-semibold mt-8">Fulfilled Orders</h2>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+          <thead>
+            <tr class="bg-gray-200 border-b">
+              <th class="px-6 py-3 text-left text-gray-600">Order ID</th>
+              <th class="px-6 py-3 text-left text-gray-600">Total</th>
+              <th class="px-6 py-3 text-left text-gray-600">Created At</th>
+              <th class="px-6 py-3 text-left text-gray-600">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (@fulfilled_orders || []).each do |order| %>
+              <tr class="border-b">
+                <td class="px-6 py-4"><%= order.id %></td>
+                <td class="px-6 py-4"><%= number_to_currency(order.total, unit: "₦") %></td>
+                <td class="px-6 py-4"><%= l(order.created_at, format: :short) %></td>
+                <td class="px-6 py-4">
+                  <%= link_to 'View', order_path(order), class: 'text-blue-500 hover:underline' %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     <% else %>
       <p class="text-lg font-semibold">Welcome, <%= current_user.name %>!</p>
       <%= link_to 'Create your store', new_store_path, class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
-    <% end %> <%# Close the if current_user.store_owner? block here %>
+    <% end %>
   </div> 
-<% else %> <%# This 'else' now corresponds to the 'if user_signed_in?' block %>
+<% else %> 
   <div class="flex flex-col items-center space-y-4">
-    <h2 class="text-2xl font-bold">Welcome to the Marketplace!</h2>
-    <p class="text-gray-600">Discover unique products from our talented vendors.</p>
-    <%= link_to "Sign up as a store owner", new_user_registration_path, class: 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded' %>
-  </div>
-
-  <% if @products.any? %>
-    <h2 class="text-2xl font-semibold mt-8">Featured Products</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-      <% @products.each do |product| %>
-        <%= link_to store_product_path(product.store, product), class: 'block' do %> 
-          <div class="bg-white rounded shadow p-4">
-            <% if product.image.attached? %>
-              <div class="mb-4">
-                <%= image_tag product.image, class: "w-full h-48 object-cover rounded-lg" %>
-              </div>
-            <% end %>
-            <h3 class="text-xl font-semibold mb-2"><%= product.name %></h3>
-            <p><%= product.description %></p>
-            <p class="text-green-600 font-bold">Price: <%= number_to_currency(product.price, unit: "₦") %></p>
-          </div>
-        <% end %>
-      <% end %>
+      <h2 class="text-2xl font-bold">Welcome to the Marketplace!</h2>
+      <p class="text-gray-600">Discover unique products from our talented vendors.</p>
+      <%= link_to "Sign up as a store owner", new_user_registration_path, class: 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded' %>
     </div>
-  <% end %>
-<% end %> <%# Close the 'if user_signed_in?' block here %>
+
+    <% if @products.any? %>
+      <h2 class="text-2xl font-semibold mt-8">Featured Products</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <% @products.each do |product| %>
+          <%= link_to store_product_path(product.store, product), class: 'block' do %> 
+            <div class="bg-white rounded shadow p-4">
+              <% if product.image.attached? %>
+                <div class="mb-4">
+                  <%= image_tag product.image, class: "w-full h-48 object-cover rounded-lg" %>
+                </div>
+              <% end %>
+              <h3 class="text-xl font-semibold mb-2"><%= product.name %></h3>
+              <p><%= product.description %></p>
+              <p class="text-green-600 font-bold">Price: <%= number_to_currency(product.price, unit: "₦") %></p>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+<% end %>
+
+<% if current_user&.store_owner? %> 
+  <script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    // Get the chart data from the embedded JSON
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+
+    // Create chart instance
+    var chart = am4core.create("chartdiv", am4charts.XYChart);
+
+    // Add data
+    chart.data = chartData;
+
+    // Create axes
+    var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    dateAxis.renderer.minGridDistance = 50; 
+
+    var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+    // Create series
+    var series = chart.series.push(new am4charts.LineSeries());
+    series.dataFields.valueY = "income";
+    series.dataFields.dateX = "date";
+    series.tooltipText = "{valueY.value}";
+    series.strokeWidth = 2;
+    series.minBulletDistance = 15;
+
+    // Add cursor
+    chart.cursor = new am4charts.XYCursor();
+
+    // Add scrollbar
+    chart.scrollbarX = new am4core.Scrollbar();
+  });
+  </script>
+<% end %>

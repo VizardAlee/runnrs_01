@@ -1,6 +1,7 @@
 require_relative "boot"
 
 require "rails/all"
+require 'groupdate'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -15,7 +16,9 @@ module Runnrs01
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w(assets tasks))
     # Configuration for the application, engines, and railties goes here.
-    #
+    
+    config.importmap.pin_all_from 'app/javascript/controllers', under: 'controllers'
+
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #

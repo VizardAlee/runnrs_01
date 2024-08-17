@@ -1,4 +1,5 @@
 import { Application } from "@hotwired/stimulus"
+import "./chartkick"  // Import the Chartkick setup
 
 const application = Application.start()
 

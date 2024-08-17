@@ -72,3 +72,5 @@ gem 'pg'
 gem 'tailwindcss-rails'
 
 gem "devise", "~> 4.9"
+
+gem 'groupdate'
