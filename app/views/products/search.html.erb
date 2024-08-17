@@ -1,0 +1,24 @@
+<div class="container mx-auto mt-10">
+  <h1 class="text-2xl font-bold mb-5">Search Results for "<%= @query %>"</h1>
+
+  <% if @products.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+      <% @products.each do |product| %>
+        <%= link_to store_product_path(product.store, product), class: 'block' do %> 
+          <div class="bg-white rounded shadow p-4">
+            <% if product.image.attached? %>
+              <div class="mb-4">
+                <%= image_tag product.image, class: "w-full h-48 object-cover rounded-lg" %>
+              </div>
+            <% end %>
+            <h3 class="text-xl font-semibold mb-2"><%= product.name %></h3>
+            <p><%= product.description %></p>
+            <p class="text-green-600 font-bold">Price: <%= number_to_currency(product.price, unit: "₦") %></p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-gray-500">No products found matching your search.</p>
+  <% end %>
+</div>

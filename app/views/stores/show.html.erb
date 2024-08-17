@@ -1,6 +1,11 @@
 <h1 class="text-4xl font-bold text-center my-4">Welcome to <%= @store.name %>!</h1>
 <p class="text-lg text-gray-700 mb-4"><%= @store.description %></p>
-
+<div class="flex items-center justify-center mt-4">
+  <%= form_tag(search_store_products_path(@store), method: :get, class: "flex") do %>
+    <%= text_field_tag :query, params[:query], placeholder: "Search by name...", class: "border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+    <%= submit_tag "Search", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r" %>
+  <% end %>
+</div>
 <% if @products.any? %>
   <h2 class="text-2xl font-semibold mb-2">Products</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

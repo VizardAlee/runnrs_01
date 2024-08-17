@@ -2,6 +2,7 @@ class ProductsController < ApplicationController
   before_action :set_store
   before_action :set_product, only: %i[ show edit update destroy add_quantity]
 
+  skip_before_action :set_store, only: [:search]
   def index
     @products = Product.all
   end
@@ -45,15 +46,10 @@ class ProductsController < ApplicationController
     end
   end
 
-  
-  
-  
-
   def show
     @store = Store.find(params[:store_id])
     @product = @store.products.find(params[:id])
   end
-  
 
   def edit
   end
@@ -67,6 +63,16 @@ class ProductsController < ApplicationController
   end
 
   def destroy
+  end
+
+  def search
+    @query = params[:query]
+    if @query.blank?
+      redirect_to root_path, alert: 'Please enter a search query.'
+    else
+      @products = Product.where("name ILIKE ?", "%#{@query}%")
+      render :search
+    end
   end
 
   def add_quantity
@@ -97,5 +103,4 @@ class ProductsController < ApplicationController
   def product_params
     params.require(:product).permit(:name, :description, :price, :image, :quantity, :has_variations)
   end
-
 end
