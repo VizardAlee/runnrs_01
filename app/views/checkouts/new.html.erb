@@ -35,7 +35,7 @@
 <% end %>
 
 <h2>Shipping & Billing Information</h2>
-<%= form_with(model: @order) do |form| %>
+<%= form_with(model: @order, url: checkout_path, method: :post) do |form| %>
   <% if !user_signed_in? %>
     <div class="mb-4">
       <%= form.label :email, class: "block text-gray-700 text-sm font-bold mb-2" %>

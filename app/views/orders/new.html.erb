@@ -1,6 +1,7 @@
 <h1>Checkout</h1>
 
 <h2>Order Summary</h2>
+
 <% if @cart.line_items.any? %>
   <table class="w-full table-auto">
     <thead>
@@ -34,6 +35,7 @@
 <% end %>
 
 <h2>Shipping & Billing Information</h2>
+
 <% if @order.errors.any? %>
   <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
     <strong class="font-bold">The following errors prevented the order from being placed:</strong>
@@ -45,7 +47,7 @@
   </div>
 <% end %>
 
-<%= form_with(model: @order, url: orders_path) do |form| %> <%# Update the URL %>
+<%= form_with(model: @order, url: orders_path) do |form| %> 
   <% if !user_signed_in? %>
     <div class="mb-4">
       <%= form.label :email, class: "block text-gray-700 text-sm font-bold mb-2" %>
@@ -65,13 +67,8 @@
 
   <h2>Payment Method</h2>
   <div class="mb-4">
-    <%# Placeholder for payment method selection %>
-    <label class="block text-gray-700 text-sm font-bold mb-2">
-      <input type="radio" name="order[payment_method]" value="paystack" checked> Paystack
-    </label>
-    <label class="block text-gray-700 text-sm font-bold mb-2">
-      <input type="radio" name="order[payment_method]" value="flutterwave"> Flutterwave
-    </label>
+    <%# Only Paystack option for now %>
+    <%= form.hidden_field :payment_method, value: "paystack" %>
   </div>
 
   <div class="flex items-center justify-between">

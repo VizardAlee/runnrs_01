@@ -23,9 +23,20 @@ Rails.application.routes.draw do
   resources :orders
   resources :orders, only: [:index, :show, :update]
   get 'test_pages/home'
+
+  resources :checkouts, only: [:new, :create] do
+    collection do
+      post :paystack_callback
+    end
+  end
+  
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   get 'checkout', to: 'checkouts#new', as: 'checkout' 
+  post 'paystack_callback', to: 'checkouts#paystack_callback'
+  post 'flutterwave_callback', to: 'checkouts#flutterwave_callback', as: :flutterwave_callback
+
   post 'checkout', to: 'checkouts#create' # Add this line for the create action
+
 
   resource :profile, only: [:show] 
 
