@@ -52,7 +52,9 @@ class StoresController < ApplicationController
 
   def show
     @store = Store.find(params[:id])
-    @products = @store.products
+    # @products = @store.products
+    @products = @store.products.paginate(page: params[:page], per_page: 9)
+
   end
 
   private
