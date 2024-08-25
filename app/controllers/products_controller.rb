@@ -4,7 +4,7 @@ class ProductsController < ApplicationController
 
   skip_before_action :set_store, only: [:search]
   def index
-    @products = Product.all
+    @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 9)
   end
 
   def new
