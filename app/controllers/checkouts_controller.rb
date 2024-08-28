@@ -32,6 +32,11 @@ class CheckoutsController < ApplicationController
   end
   
   def flutterwave_callback
+    if params[:status] == 'cancelled'
+      flash[:alert] = "Payment was cancelled."
+      redirect_to root_path and return
+    end
+
     request_body = request.body.read
     received_signature = request.headers['HTTP_VERIF_HASH']
     expected_signature = ENV['FLUTTERWAVE_SECRET_HASH'] # Set this in your environment variables

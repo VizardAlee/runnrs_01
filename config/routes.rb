@@ -38,6 +38,7 @@ Rails.application.routes.draw do
   get 'checkout', to: 'checkouts#new', as: 'checkout' 
   post 'paystack_callback', to: 'checkouts#paystack_callback'
   post 'flutterwave_callback', to: 'checkouts#flutterwave_callback', as: :flutterwave_callback
+  get 'flutterwave_callback', to: 'checkouts#flutterwave_callback'
 
   post 'checkout', to: 'checkouts#create' # Add this line for the create action
 

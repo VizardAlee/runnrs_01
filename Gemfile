@@ -80,3 +80,4 @@ gem 'groupdate'
 gem 'dotenv-rails', groups: [:development, :test]
 gem 'http'
 gem 'will_paginate'
+gem 'toastr-rails'
