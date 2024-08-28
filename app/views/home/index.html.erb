@@ -40,6 +40,9 @@
             <% end %>
           </tbody>
         </table>
+        <div class="mt-4">
+          <%= render 'shared/pagination', collection: @fulfilled_orders %>
+        </div>
       </div>
     <% else %>
       <p class="text-lg font-semibold">Welcome, <%= current_user.name %>!</p>

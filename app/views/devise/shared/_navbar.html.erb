@@ -1,20 +1,34 @@
 <nav class="bg-white shadow-md">
   <div class="container mx-auto px-4">
     <div class="flex items-center justify-between h-16">
+      <!-- Left Items -->
       <div class="flex items-center">
         <%= link_to "Home", root_path, class: "text-gray-800 hover:text-gray-900 mr-4" %>
 
+        <!-- Centered Logo -->
+        <% if user_signed_in? && current_user.store.logo.attached? %>
+          <%= link_to store_path(current_user.store), class: "mx-4" do %>
+            <%= image_tag current_user.store.logo, alt: "Store Logo", class: "max-h-12" %>
+          <% end %>
+        <% end %>
+
+        <!-- Cart and Sign Out -->
         <% if user_signed_in? %>
-          <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
-          
+          <%= link_to "Cart", cart_path(current_user.cart || current_user.create_cart), class: "mr-4" %>
+
+          <%= button_to "Sign outs", destroy_user_session_path, method: :delete, class: "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
+
           <% if @product.present? %>
             <%= yield :add_to_cart_button, @product&.id %>
           <% end %>
-
-          <%= link_to "Cart", cart_path(current_user.cart || current_user.create_cart) %>
         <% else %>
           <%= link_to "Sign in", new_user_session_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
         <% end %>
+      </div>
+
+      <!-- Right Items -->
+      <div class="flex items-center">
+        <!-- Additional items can go here if needed -->
       </div>
     </div>
   </div>

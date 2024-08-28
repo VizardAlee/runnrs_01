@@ -2,6 +2,10 @@ Rails.application.routes.draw do
   root 'home#index'
   devise_for :users
   resources :stores do
+    member do
+      get 'new_logo', to: 'stores#new_logo'
+      patch 'update_logo', to: 'stores#update_logo'
+    end
     resources :products do
       resources :variations
       collection do

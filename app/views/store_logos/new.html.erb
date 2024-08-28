@@ -1,0 +1,10 @@
+<!-- app/views/store_logos/new.html.erb -->
+<h1 class="text-2xl font-bold text-center my-4">Add Logo</h1>
+
+<%= form_with model: @store, url: store_store_logos_path(@store), local: true, html: { multipart: true } do |form| %>
+  <div class="mb-4">
+    <%= form.label :logo, class: "block text-gray-700 text-sm font-bold mb-2" %>
+    <%= form.file_field :logo, class: "border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+  </div>
+  <%= form.submit 'Upload Logo', class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+<% end %>
