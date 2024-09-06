@@ -4,7 +4,7 @@
       <p class="text-lg font-semibold mb-2">Welcome, <%= current_user.name %>!</p> 
       <%= link_to 'View your store', store_path(current_user.store), class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
       <%= button_to "View Orders", orders_path, method: :get, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-      <%= link_to "Profile", profile_path, class: "text-gray-800 hover:text-gray-900" %>
+      <%= link_to "Profile", profile_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
       
       <% if @chart_data.any? %>
         <h2 class="text-2xl font-semibold mt-8">Income Chart</h2>

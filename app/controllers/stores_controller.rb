@@ -57,15 +57,16 @@ class StoresController < ApplicationController
   end
 
   def new_logo
+    @store = Store.find(params[:id])
     # @store is set by the before_action
   end
 
   def update_logo
-    if @store.logo.attach(params[:store][:logo])
-      redirect_to @store, notice: 'Logo was successfully updated.'
+    @store = Store.find(params[:id])
+    if @store.update(logo_params)
+      redirect_to profile_path, notice: 'Logo was successfully updated.'
     else
-      flash.now[:alert] = 'Failed to update logo.'
-      render :new_logo
+      render :edit
     end
   end
 
@@ -77,5 +78,9 @@ class StoresController < ApplicationController
 
   def store_params
     params.require(:store).permit(:name, :description, :logo)
+  end
+
+  def logo_params
+    params.require(:store).permit(:logo)
   end
 end

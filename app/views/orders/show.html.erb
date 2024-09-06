@@ -33,4 +33,5 @@
   <% if @order.status == 'unfulfilled' && current_user == @order.shopping_cart.store.user %>
     <%= button_to "Mark as Fulfilled", order_path(@order), method: :patch, params: { order: { status: 'fulfilled' } }, class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
   <% end %>
+  
 </div>

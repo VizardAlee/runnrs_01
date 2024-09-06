@@ -20,7 +20,7 @@
     <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
   </head>
 
-  <body>
+  <body style="display: flex; flex-direction: column; min-height: 100vh;">
     <nav class="bg-white shadow-md">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
@@ -31,10 +31,11 @@
 
           <!-- Centered Logo -->
           <div class="flex-grow flex items-center justify-center">
-            <% if user_signed_in? && current_user.store.logo.attached? %>
+            <% if user_signed_in? && current_user.store.present? && current_user.store.logo.attached? %>
               <%= image_tag current_user.store.logo, alt: "Store Logo", class: "h-12 w-auto", style: "max-height: 2rem;" %>
             <% end %>
           </div>
+
 
           <!-- Right Items -->
           <div class="flex items-center">
@@ -59,7 +60,7 @@
       </div>
     </nav>
 
-    <main class="container mx-auto mt-8 px-4">
+    <main style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; padding: 2rem;">
       <%= turbo_frame_tag "flash_messages" do %>
       <% end %>
 
@@ -71,9 +72,9 @@
     <div>
       
     </div>
-    <footer style="background-color: #2d3748; color: #fff; padding: 1rem 0;">
+    <footer style="background-color: #2d3748; color: #fff; padding: 1rem 0; margin-top: auto;">
       <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-
+        
         <!-- Contact Info -->
         <div style="margin-bottom: 1rem; text-align: center;">
           <p style="font-size: 0.875rem;">&copy; <%= Time.now.year %> Runnrs01. All rights reserved.</p>

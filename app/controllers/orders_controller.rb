@@ -76,11 +76,14 @@ class OrdersController < ApplicationController
 
   def fetch_orders_by_status(status)
     return [] unless current_user&.store&.products
-
+  
     product_ids = current_user.store.products.pluck(:id)
+    
+    # Find orders with products linked to the current user's store
     Order.joins(shopping_cart: :line_items)
          .where(line_items: { product_id: product_ids })
          .where(status: status)
          .distinct
   end
+  
 end
