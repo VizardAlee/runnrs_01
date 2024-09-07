@@ -4,15 +4,20 @@ class LineItemsController < ApplicationController
     product = Product.find(params[:product_id])
     variation = Variation.find_by(id: params[:variation_id]) if params[:variation_id]
 
-    # if !product.has_variations?
-    #   params[:line_items][:variation_id] = nil 
-    # end
-
     quantity = params[:quantity].to_i
 
     # Ensure quantity is valid
     if quantity <= 0
-      redirect_to product_path(product), alert: 'Please enter a valid quantity.' 
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace(
+            'flash_messages',
+            partial: 'shared/flash_messages',
+            locals: { alert: 'Please enter a valid quantity.' }
+          )
+        }
+        format.html { redirect_to product_path(product), alert: 'Please enter a valid quantity.' }
+      end
       return
     end
 
@@ -34,15 +39,23 @@ class LineItemsController < ApplicationController
 
       respond_to do |format|
         format.turbo_stream { 
-          render turbo_stream: 
-            turbo_stream.replace('cart', partial: 'shopping_carts/cart', locals: { cart: @cart }) 
+          render turbo_stream: [
+            turbo_stream.replace('cart', partial: 'shopping_carts/cart', locals: { cart: @cart }),
+            turbo_stream.replace('flash_messages', partial: 'shared/flash_messages', locals: { notice: 'Item added to cart!' })
+          ]
         }
         format.html { redirect_to shopping_cart_path(@cart), notice: 'Item added to cart!' }
       end
     else
-      # Handle errors (render the product page with an error message)
+      # Handle errors
       respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.replace('flash_messages', partial: 'shared/flash_messages', locals: { alert: @line_item.errors.full_messages.to_sentence }) }
+        format.turbo_stream { 
+          render turbo_stream: turbo_stream.replace(
+            'flash_messages',
+            partial: 'shared/flash_messages',
+            locals: { alert: @line_item.errors.full_messages.to_sentence }
+          )
+        }
         format.html { redirect_to product_path(product), alert: @line_item.errors.full_messages.to_sentence }
       end
     end
@@ -58,7 +71,16 @@ class LineItemsController < ApplicationController
       @line_item.product.increment!(:quantity, @line_item.quantity) # Increment product quantity
     end
 
-    redirect_to shopping_cart_path(@line_item.shopping_cart), notice: 'Item removed from cart!'
+    respond_to do |format|
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.replace(
+          'flash_messages',
+          partial: 'shared/flash_messages',
+          locals: { notice: 'Item removed from cart!' }
+        )
+      }
+      format.html { redirect_to shopping_cart_path(@line_item.shopping_cart), notice: 'Item removed from cart!' }
+    end
   end
 
   private

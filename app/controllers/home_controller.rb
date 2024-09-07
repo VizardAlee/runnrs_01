@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   def index
     # Randomize the products order and paginate
-    @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 2)
+    @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 5)
 
     if current_user&.store_owner?
       @store = current_user.store

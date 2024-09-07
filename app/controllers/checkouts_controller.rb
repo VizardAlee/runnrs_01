@@ -32,7 +32,6 @@ class CheckoutsController < ApplicationController
       end
       clear_cart
       clear_cart_session
-      Rails.logger.debug "Cart cleared and session reset."
     else
       flash[:error] = "Order could not be saved. Please check your details and try again."
       redirect_to new_checkout_path
@@ -41,6 +40,7 @@ class CheckoutsController < ApplicationController
 
   def flutterwave_callback
     Rails.logger.debug("Received params: #{params.inspect}")
+    Rails.logger.debug "FULL URL: #{request.original_url}}"
 
     request_body = retrieve_request_body
     return unless validate_signature(request_body)
@@ -133,7 +133,7 @@ class CheckoutsController < ApplicationController
   end
   
   def validate_signature(request_body)
-    received_signature = request.headers['HTTP_VERIF_HASH']
+    received_signature = params[:signature]
     secret_hash = ENV['FLUTTERWAVE_SECRET_HASH']
 
     if secret_hash.nil?
@@ -188,10 +188,8 @@ class CheckoutsController < ApplicationController
         @cart.update!(status: 'processed')
         Rails.logger.debug "Clearing line items from cart #{@cart.id}"
         @cart.line_items.destroy_all # Clear line items from cart
+        clear_cart_session
       end
-      clear_cart
-      clear_cart_session
-      # redirect_to root_path, notice: 'Order completed and cart cleared!'
       redirect_to order_confirmation_path(@order), notice: 'Order placed successfully!'
     else
       Rails.logger.error "Order not found for reference: #{tx_ref}"
@@ -207,5 +205,4 @@ class CheckoutsController < ApplicationController
   def clear_cart
     @cart.line_items.destroy_all
   end
-  
 end
