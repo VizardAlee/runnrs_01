@@ -68,6 +68,14 @@ class OrdersController < ApplicationController
     end
   end
 
+  def confirmation
+    @order = Order.find_by(id: params[:id])
+    Rails.logger.debug "Order: #{@order.inspect}"
+    if @order.nil?
+      redirect_to root_path, alert: "Order not found"
+    end
+  end
+
   private
 
   def order_params

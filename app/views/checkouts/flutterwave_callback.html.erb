@@ -1,0 +1,20 @@
+<div class="container mx-auto p-6">
+    <div class="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
+      <h1 class="text-2xl font-semibold mb-4 text-center text-green-600">Payment Successful</h1>
+      
+      <p class="text-lg text-gray-700 mb-4">Thank you for your payment. Your transaction was successful!</p>
+      
+      <div class="border-t border-gray-300 mt-4 pt-4">
+        <h2 class="text-xl font-medium mb-2">Transaction Details</h2>
+        <ul class="list-disc pl-5 text-gray-600">
+          <li><strong>Transaction ID:</strong> <%= params[:transaction_id] %></li>
+          <li><strong>Reference:</strong> <%= params[:tx_ref] %></li>
+          <li><strong>Status:</strong> <%= params[:status].capitalize %></li>
+        </ul>
+      </div>
+
+      <div class="mt-6 text-center">
+        <a href="<%= root_path %>" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Return to Home</a>
+      </div>
+    </div>
+  </div>

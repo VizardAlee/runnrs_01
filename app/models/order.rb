@@ -1,6 +1,7 @@
 class Order < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :shopping_cart
+  has_many :order_items
   has_many :line_items, through: :shopping_cart
   has_many :products, through: :line_items
 

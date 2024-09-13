@@ -40,7 +40,7 @@ Rails.application.routes.draw do
 
   post 'flutterwave_callback', to: 'checkouts#flutterwave_callback', as: :flutterwave_callback
   get 'flutterwave_callback', to: 'checkouts#flutterwave_callback'
-
+  get 'order_confirmation/:id', to: 'orders#confirmation', as: 'order_confirmation'
 
 
   resource :profile, only: [:show] 

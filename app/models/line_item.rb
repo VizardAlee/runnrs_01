@@ -2,7 +2,7 @@ class LineItem < ApplicationRecord
   belongs_to :shopping_cart
   belongs_to :product
   belongs_to :variation, optional: true
-  has_one :order, through: :shopping_cart
+  # has_one :order, through: :shopping_cart
 
   def total_price
     quantity * price
@@ -17,4 +17,6 @@ class LineItem < ApplicationRecord
   end
 
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :quantity, numericality: { greater_than_or_equal_to: 0 }
+
 end
