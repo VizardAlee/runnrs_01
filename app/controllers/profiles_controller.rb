@@ -3,7 +3,13 @@ class ProfilesController < ApplicationController
 
   def show
     @user = current_user
-    @orders = current_user.store.products.flat_map(&:orders)
+    @store = @user.store
+
+    # Access orders through order_items and line_items
+    @orders = Order.joins(:order_items).where(order_items: { product_id: @store.products.ids }).distinct
+
+    # Alternatively, if you want to stick with flat_map and the model associations approach:
+    # @orders = @store.products.flat_map(&:orders).uniq
   end
 
   def new_logo

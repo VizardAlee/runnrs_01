@@ -2,7 +2,8 @@ class LineItem < ApplicationRecord
   belongs_to :shopping_cart
   belongs_to :product
   belongs_to :variation, optional: true
-  # has_one :order, through: :shopping_cart
+  has_many :order_items
+  has_many :orders, through: :order_items
 
   def total_price
     quantity * price

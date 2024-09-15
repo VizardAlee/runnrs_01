@@ -2,19 +2,20 @@
   <div class="mb-4">
     <% if @store.logo.attached? %>
       <div class="flex justify-center">
-        <!-- Make the logo clickable -->
-        <%= link_to store_path(@store) do %>
-          <%= image_tag @store.logo, class: "w-auto h-48 object-cover rounded-full", style: "max-height: 5rem;" %>
-        <% end %>
+        <%= image_tag @store.logo, class: "w-auto h-48 object-cover rounded-full", style: "max-height: 5rem;" %>
       </div>
     <% end %>
 
     <!-- Make the store name clickable -->
-    <h2 class="text-2xl font-bold text-center mt-2">
-      <%= link_to @store.name, store_path(@store), class: "text-blue-500 hover:underline" %>
-    </h2>
+    <h2 class="text-2xl font-bold text-center mt-2"><%= @store.name %></h2>
+
 
     <p class="text-center text-gray-700"><%= @store.description %></p>
+
+    <!-- Add Visit Store button below the store name -->
+    <div class="flex justify-center mt-4">
+      <%= link_to "Visit Store", store_path(@store), class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+    </div>
   </div>
 <% end %>
 
