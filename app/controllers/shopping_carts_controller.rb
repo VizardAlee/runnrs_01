@@ -9,7 +9,7 @@ class ShoppingCartsController < ApplicationController
     option = variation.options.find_by(id: params[:option_id]) if params[:option_id]
 
     current_cart.add_item(product, variation, option)
-    redirect_to shopping_cart_path(current_cart)
+    # redirect_to shopping_cart_path(current_cart)
   end
 
 end
