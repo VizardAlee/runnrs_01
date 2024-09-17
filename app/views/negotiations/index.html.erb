@@ -1,0 +1,26 @@
+<h1>Negotiations for Store: <%= @store.name %></h1>
+
+<table class="min-w-full bg-white border border-gray-200">
+  <thead>
+    <tr>
+      <th class="py-2 px-4 border-b">User</th>
+      <th class="py-2 px-4 border-b">Product</th>
+      <th class="py-2 px-4 border-b">Date of Negotiation</th>
+      <th class="py-2 px-4 border-b">Actions</th> <!-- Added Actions column -->
+    </tr>
+  </thead>
+  <tbody>
+    <% @negotiations.each do |negotiation| %>
+      <tr>
+        <td class="py-2 px-4 border-b"><%= negotiation.user.name %></td>
+        <td class="py-2 px-4 border-b">
+          <%= link_to negotiation.product.name, store_product_path(@store, negotiation.product) %>
+        </td>
+        <td class="py-2 px-4 border-b"><%= negotiation.created_at.strftime("%B %d, %Y") %></td>
+        <td class="py-2 px-4 border-b">
+          <%= link_to 'View', store_negotiation_path(@store, negotiation), class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

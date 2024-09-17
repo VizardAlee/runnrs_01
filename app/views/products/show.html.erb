@@ -90,6 +90,46 @@
   </div>
 <% end %>
 
+<!-- Add negotiation section after the product details -->
+<% unless current_user == @store.user %> <!-- Ensure the store owner doesn't see this section -->
+  <% if user_signed_in? %>
+    <!-- Display chat box if user is signed in -->
+    <div class="mt-8">
+    <h3 class="text-lg font-bold text-center">Negotiate with Store Owner</h3>
+    <%= form_with model: [@store, @product, @negotiation], url: store_product_negotiations_path(@store, @product), method: :post, local: true do |form| %>
+      <div class="mb-4">
+        <%= form.label :message, "Your Message:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+        <%= form.text_area :message, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", placeholder: "Type your message here..." %>
+      </div>
+      <div class="mb-4">
+        <%= form.submit "Send Message", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+      </div>
+    <% end %>
+
+
+    <!-- Display existing negotiations -->
+    <div class="mt-8">
+      <h3 class="text-lg font-bold text-center">Messages</h3>
+      <div id="messages_list" class="messages-list">
+        <% @negotiations.each do |negotiation| %>
+          <%= render partial: "negotiations/message", locals: { negotiation: negotiation } %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% else %>
+    <!-- Display sign-in button and set default role to 'regular' -->
+    <div class="mt-8 text-center">
+      <p class="text-gray-700">Sign in to chat with the store owner and negotiate.</p>
+      <%= link_to "Sign in to interact", new_user_session_path, data: { turbo_frame: "_top" }, 
+                    class: "text-blue-500 font-bold hover:text-blue-700", 
+                    method: :get, 
+                    params: { return_to: request.fullpath } %>
+    </div>
+  <% end %>
+<% end %>
+
 <% if current_user == @store.user %>
   <%= render 'add_quantity_form', store: @store, product: @product %>
 <% end %>

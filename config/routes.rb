@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
+  get 'replies/create'
   root 'home#index'
-  devise_for :users
+  devise_for :users, controllers: {
+    registrations: 'users/registrations'
+  }
   resources :stores do
     member do
       get 'new_logo', to: 'stores#new_logo'
@@ -14,6 +17,10 @@ Rails.application.routes.draw do
       member do
         patch :add_quantity
       end
+      resources :negotiations, only: [:create]
+    end
+    resources :negotiations, only: [:index, :show] do
+      resources :replies, only: [:create]
     end
   end
 
@@ -33,6 +40,8 @@ Rails.application.routes.draw do
       post :paystack_callback
     end
   end
+
+  resources :products, only: [:index]
   
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   get 'checkout', to: 'checkouts#new', as: 'checkout'

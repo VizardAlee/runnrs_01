@@ -1,0 +1,33 @@
+<!-- Negotiation message -->
+<div class="message my-4 p-4 bg-gray-200 rounded">
+  <p class="font-semibold"><%= negotiation.user.email %> says:</p>
+  <p><%= negotiation.message %></p>
+  <p class="text-xs text-gray-600">Sent on <%= negotiation.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+</div>
+
+<!-- Replies Section -->
+<div class="ml-6" id="negotiation_<%= negotiation.id %>_replies">
+  <% if negotiation.replies.any? %>
+    <h4 class="font-semibold text-sm text-gray-700">Replies:</h4>
+    <% negotiation.replies.each do |reply| %>
+      <div class="reply my-2 p-3 bg-gray-300 rounded">
+        <p class="text-sm font-semibold"><%= reply.user.email %> replies:</p>
+        <p><%= reply.message %></p>
+        <p class="text-xs text-gray-600">Replied on <%= reply.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- Add Reply Form -->
+<% if user_signed_in? && current_user != @store.user %>
+  <%= form_with(model: [negotiation, Reply.new], url: store_negotiation_replies_path(@store, negotiation), local: true) do |form| %>
+    <div class="mt-2">
+      <%= form.label :message, "Reply:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+      <%= form.text_area :message, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", placeholder: "Type your reply here..." %>
+    </div>
+    <div class="mt-2">
+      <%= form.submit "Send Reply", class: "bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded" %>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,8 @@
+<div class="mt-4 p-4 border rounded-lg bg-gray-50">
+  <% if reply.user %>
+    <p><strong><%= reply.user.name %>:</strong> <%= reply.message %></p>
+    <p><small><%= time_ago_in_words(reply.created_at) %> ago</small></p>
+  <% else %>
+    <p><strong>Unknown user:</strong> <%= reply.message %></p>
+  <% end %>
+</div>

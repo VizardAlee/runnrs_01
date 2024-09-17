@@ -1,8 +1,9 @@
 class ProductsController < ApplicationController
   before_action :set_store
-  before_action :set_product, only: %i[ show edit update destroy add_quantity]
-
+  before_action :set_store, except: [:index]
+  before_action :set_product, only: %i[ show edit update destroy add_quantity create_message ]
   skip_before_action :set_store, only: [:search]
+
   def index
     @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 9)
   end
@@ -17,18 +18,14 @@ class ProductsController < ApplicationController
     if @product.save
       respond_to do |format|
         format.turbo_stream do 
-          # Replace the form with a new, empty form
           render turbo_stream: turbo_stream.replace(
             "new_product_form",
             partial: "products/form", 
             locals: { store: @store, product: Product.new } 
           )
-
-          # Append a flash message to indicate success
           turbo_stream.append "flash_messages", partial: "layouts/flash_messages"
         end
         
-        # Redirect to the product's show page using Turbo Stream
         format.turbo_stream { turbo_stream.redirect_to store_product_path(@store, @product) } 
         format.html { redirect_to [@store, @product], notice: 'Product was successfully created.', data: { turbo: false } }
       end
@@ -47,9 +44,36 @@ class ProductsController < ApplicationController
   end
 
   def show
-    @store = Store.find(params[:store_id])
+    # Store the location if user is not signed in
+    store_location_for(:user, request.fullpath) unless user_signed_in?
     @product = @store.products.find(params[:id])
+    @negotiation = @product.negotiations.new
+    @negotiations = @product.negotiations.includes(:user).order(created_at: :asc)
   end
+
+  def create_message
+    @negotiation = @product.negotiations.build(negotiation_params)
+    @negotiation.user = current_user
+    @negotiation.store = @store  # Ensure the store is set
+  
+    if @negotiation.save
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.append(
+            "negotiations",
+            partial: "negotiations/negotiation",
+            locals: { negotiation: @negotiation }
+          )
+        end
+        format.html { redirect_to store_product_path(@store, @product), notice: "Message sent successfully." }
+      end
+    else
+      respond_to do |format|
+        format.html { render :show, status: :unprocessable_entity }
+      end
+    end
+  end
+  
 
   def edit
   end
@@ -76,7 +100,6 @@ class ProductsController < ApplicationController
   end
 
   def add_quantity
-    @product = @store.products.find(params[:id])
     new_quantity = params[:product][:quantity].to_i
     puts "Params: #{params.inspect}" 
     puts "New Quantity: #{new_quantity}"
@@ -93,14 +116,26 @@ class ProductsController < ApplicationController
   private
 
   def set_store
-    @store = Store.find(params[:store_id])
+    @store = Store.find_by(id: params[:store_id])
+    puts "Store ID: #{params[:store_id]}"
+    puts "Store: #{@store.inspect}"
+    if @store.nil?
+      redirect_to root_path, alert: "Store not found"
+    end
   end
 
   def set_product
-    @product = @store.products.find(params[:id])
+    @product = @store.products.find_by(id: params[:id])
+    if @product.nil?
+      redirect_to store_products_path(@store), alert: "Product not found"
+    end
   end
 
   def product_params
     params.require(:product).permit(:name, :description, :price, :image, :quantity, :has_variations)
+  end
+
+  def negotiation_params
+    params.require(:negotiation).permit(:message)
   end
 end

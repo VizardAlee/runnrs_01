@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_09_13_132733) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_16_130146) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -55,6 +55,28 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_13_132733) do
     t.index ["variation_id"], name: "index_line_items_on_variation_id"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.bigint "negotiation_id", null: false
+    t.bigint "user_id", null: false
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["negotiation_id"], name: "index_messages_on_negotiation_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
+  create_table "negotiations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "store_id", null: false
+    t.bigint "product_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "message", null: false
+    t.index ["product_id"], name: "index_negotiations_on_product_id"
+    t.index ["store_id"], name: "index_negotiations_on_store_id"
+    t.index ["user_id"], name: "index_negotiations_on_user_id"
+  end
+
   create_table "order_items", force: :cascade do |t|
     t.bigint "order_id", null: false
     t.bigint "line_item_id", null: false
@@ -94,6 +116,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_13_132733) do
     t.boolean "has_variations", default: false
     t.integer "quantity", default: 0
     t.index ["store_id"], name: "index_products_on_store_id"
+  end
+
+  create_table "replies", force: :cascade do |t|
+    t.text "message"
+    t.bigint "user_id", null: false
+    t.bigint "negotiation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["negotiation_id"], name: "index_replies_on_negotiation_id"
+    t.index ["user_id"], name: "index_replies_on_user_id"
   end
 
   create_table "shopping_carts", force: :cascade do |t|
@@ -143,12 +175,19 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_13_132733) do
   add_foreign_key "line_items", "products"
   add_foreign_key "line_items", "shopping_carts"
   add_foreign_key "line_items", "variations"
+  add_foreign_key "messages", "negotiations"
+  add_foreign_key "messages", "users"
+  add_foreign_key "negotiations", "products"
+  add_foreign_key "negotiations", "stores"
+  add_foreign_key "negotiations", "users"
   add_foreign_key "order_items", "line_items"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "shopping_carts"
   add_foreign_key "orders", "users"
   add_foreign_key "products", "stores"
+  add_foreign_key "replies", "negotiations"
+  add_foreign_key "replies", "users"
   add_foreign_key "shopping_carts", "users"
   add_foreign_key "stores", "users"
   add_foreign_key "variations", "products"

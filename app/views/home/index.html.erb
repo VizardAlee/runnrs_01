@@ -1,21 +1,34 @@
 <% if user_signed_in? %>
   <div class="p-4 bg-gray-100 rounded-lg shadow-md">
-    <% if current_user.store_owner? %>
-      <p class="text-lg font-semibold mb-2">Welcome, <%= current_user.name %>!</p> 
+    <% if current_user.store_owner? && current_user.has_store? %>
+      <p class="text-lg font-semibold mb-2">Welcome, <%= current_user.name %>!</p>
+      
+      <!-- Button to view the store -->
       <%= link_to 'View your store', store_path(current_user.store), class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+      
+      <!-- Button to view orders -->
       <%= button_to "View Orders", orders_path, method: :get, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+      
+      <!-- Button to view profile -->
       <%= link_to "Profile", profile_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
       
+      <!-- NEW: Button to view all products in the marketplace -->
+      <%= link_to "View all products in marketplace", products_path, class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4" %>
+
+      <!-- NEW: Button to view negotiations -->
+      <%= link_to "View Negotiations", store_negotiations_path(current_user.store), class: 'bg-green-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded mt-4' %>
+
       <% if @chart_data.any? %>
         <h2 class="text-2xl font-semibold mt-8">Income Chart</h2>
         <div class="w-full h-300" id="chartdiv">
           <canvas></canvas>
-        </div>       
-
-        <%# Embed the chart data as JSON in a script tag %>
+        </div>
+        
+        <!-- Embed the chart data as JSON in a script tag -->
         <%= content_tag :script, @chart_data.to_json.html_safe, type: 'application/json', id: 'chart-data' %>     
       <% end %>
-      
+
+      <!-- Fulfilled Orders Table -->
       <h2 class="text-2xl font-semibold mt-8">Fulfilled Orders</h2>
       <div class="mt-4 overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
@@ -44,25 +57,59 @@
           <%= render 'shared/pagination', collection: @fulfilled_orders %>
         </div>
       </div>
-    <% else %>
+
+    <% elsif current_user.regular? %>
       <p class="text-lg font-semibold">Welcome, <%= current_user.name %>!</p>
       <%= link_to 'Create your store', new_store_path, class: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
-    <% end %>
-  </div> 
-<% else %> 
-  <div class="flex flex-col items-center space-y-4">
-      <h2 class="text-2xl font-bold">Welcome to the Marketplace!</h2>
-      <div class="flex items-center justify-center mt-4"> <%# Adjust margin as needed %>
+      
+      <!-- Search form for regular users -->
+      <div class="flex items-center justify-center mt-4"> 
         <%= form_tag(search_path, method: :get, class: "flex") do %>
           <%= text_field_tag :query, params[:query], placeholder: "Search by name...", class: "border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
           <%= submit_tag "Search", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r" %>
         <% end %>
       </div>
-      <p class="text-gray-600">Discover unique products from our talented vendors.</p>
-      <%= link_to "Sign up as a store owner", new_user_registration_path, class: 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded' %>
-    </div>
 
-    <% if @products.any? %>
+      <!-- Display products for regular users -->
+      <% if @products.any? %>
+        <h2 class="text-2xl font-semibold mt-8">Featured Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <% @products.each do |product| %>
+            <%= link_to store_product_path(product.store, product), class: 'block' do %> 
+              <div class="bg-white rounded shadow p-4">
+                <% if product.image.attached? %>
+                  <div class="mb-4">
+                    <%= image_tag product.image, class: "w-full h-48 object-cover rounded-lg" %>
+                  </div>
+                <% end %>
+                <h3 class="text-xl font-semibold mb-2"><%= product.name %></h3>
+                <p><%= product.description %></p>
+                <p class="text-green-600 font-bold">Price: <%= number_to_currency(product.price, unit: "₦") %></p>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+        <div class="mt-4">
+          <%= render 'shared/pagination', collection: @products %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <!-- Non-signed-in users' view  -->
+  <div class="flex flex-col items-center space-y-4">
+    <h2 class="text-2xl font-bold">Welcome to the Marketplace!</h2>
+    <div class="flex items-center justify-center mt-4"> 
+      <%= form_tag(search_path, method: :get, class: "flex") do %>
+        <%= text_field_tag :query, params[:query], placeholder: "Search by name...", class: "border rounded-l py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= submit_tag "Search", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r" %>
+      <% end %>
+    </div>
+    <p class="text-gray-600">Discover unique products from our talented vendors.</p>
+    <%= link_to "Sign up as a store owner", new_user_registration_path(user: { role: 'store_owner' }), class: 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded' %>
+  </div>
+
+  <% if @products.any? %>
     <h2 class="text-2xl font-semibold mt-8">Featured Products</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
       <% @products.each do |product| %>

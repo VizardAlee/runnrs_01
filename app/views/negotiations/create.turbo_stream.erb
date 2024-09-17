@@ -1,0 +1,3 @@
+<%= turbo_stream.append "messages_list", partial: "negotiations/message", locals: { negotiation: @negotiation } %>
+
+<%= turbo_stream.replace "new_negotiation_form", partial: "negotiations/form", locals: { store: @store, product: @product, negotiation: Negotiation.new } %>

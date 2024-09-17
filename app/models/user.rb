@@ -7,6 +7,7 @@ class User < ApplicationRecord
   enum role: { regular: 0, store_owner: 1 }
   has_one :store
   has_many :orders
+  has_many :replies
 
   def can_create_store?
     role == 'store_owner' && store.nil?
@@ -16,4 +17,5 @@ class User < ApplicationRecord
     store.present?
   end
 end
+
 
