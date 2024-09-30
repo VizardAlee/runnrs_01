@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :merge_cart_after_login, if: :user_signed_in?
   helper_method :current_cart
 
   protected
@@ -52,4 +53,43 @@ class ApplicationController < ActionController::Base
 
     cart
   end
+
+  def merge_cart_after_login
+    # Log the session cart and user cart information for debugging
+    Rails.logger.debug "Session Cart ID: #{session[:cart_id]}"
+    Rails.logger.debug "Current User ID: #{current_user.id}"
+  
+    session_cart = ShoppingCart.find_by(id: session[:cart_id], status: "active")
+    user_cart = ShoppingCart.find_or_create_by(user: current_user, status: "active")
+  
+    Rails.logger.debug "Session Cart: #{session_cart.inspect}"
+    Rails.logger.debug "User Cart: #{user_cart.inspect}"
+  
+    if session_cart && session_cart != user_cart
+      merge_carts(user_cart, session_cart)
+      session_cart.destroy
+      session[:cart_id] = nil
+    else
+      Rails.logger.debug "No session cart found or session cart matches user cart."
+    end
+  end  
+
+  def merge_carts(user_cart, session_cart)
+    Rails.logger.debug "Merging session cart into user cart"
+    
+    session_cart.line_items.each do |item|
+      Rails.logger.debug "Session Cart Item: #{item.inspect}"
+  
+      existing_item = user_cart.line_items.find_by(product_id: item.product_id, variation_id: item.variation_id)
+      
+      if existing_item
+        Rails.logger.debug "Updating quantity for existing item: #{existing_item.inspect}"
+        existing_item.update(quantity: existing_item.quantity + item.quantity)
+      else
+        Rails.logger.debug "Moving new item to user cart: #{item.inspect}"
+        item.update(shopping_cart_id: user_cart.id)
+      end
+    end
+  end
+  
 end
