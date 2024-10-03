@@ -4,11 +4,13 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {
     registrations: 'users/registrations'
   }
+
   resources :stores do
     member do
       get 'new_logo', to: 'stores#new_logo'
       patch 'update_logo', to: 'stores#update_logo'
     end
+
     resources :products do
       resources :variations
       collection do
@@ -19,7 +21,11 @@ Rails.application.routes.draw do
       end
       resources :negotiations, only: [:create]
     end
+
     resources :negotiations, only: [:index, :show] do
+      member do
+        patch :accept_offer  # New route for accepting the offer and setting the agreed price
+      end
       resources :replies, only: [:create]
     end
   end
@@ -43,7 +49,6 @@ Rails.application.routes.draw do
 
   resources :products, only: [:index]
   
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   get 'checkout', to: 'checkouts#new', as: 'checkout'
   post 'checkout', to: 'checkouts#create'
 
@@ -51,13 +56,8 @@ Rails.application.routes.draw do
   get 'flutterwave_callback', to: 'checkouts#flutterwave_callback'
   get 'order_confirmation/:id', to: 'orders#confirmation', as: 'order_confirmation'
 
-
   resource :profile, only: [:show] 
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
   get 'search', to: 'products#search', as: 'search'
-  # Defines the root path route ("/")
-  # root "posts#index"
 end

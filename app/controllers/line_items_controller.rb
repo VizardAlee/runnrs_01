@@ -21,8 +21,9 @@ class LineItemsController < ApplicationController
       return
     end
 
-    # Calculate the price based on variation or product
-    price = variation ? variation.price : product.price
+    # Calculate the price based on agreed price, variation or product
+    agreed_price = params[:agreed_price].present? ? params[:agreed_price].to_f : nil
+    price = agreed_price || (variation ? variation.price : product.price)
 
     # Build the line_item with the calculated price
     @line_item = @cart.line_items.build(product: product, variation: variation, quantity: quantity, price: price)

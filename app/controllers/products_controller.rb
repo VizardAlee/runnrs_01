@@ -44,12 +44,33 @@ class ProductsController < ApplicationController
   end
 
   def show
-    # Store the location if user is not signed in
+    # Store the location if the user is not signed in
     store_location_for(:user, request.fullpath) unless user_signed_in?
+  
+    # Find the product within the store
     @product = @store.products.find(params[:id])
-    @negotiation = @product.negotiations.new
+  
+    # Check if the user is signed in and not the store owner
+    if user_signed_in? && current_user != @store.user
+      @negotiation = @product.negotiations.find_by(user_id: current_user.id) # Ensure we're querying by user_id
+  
+      Rails.logger.debug "Negotiation found: #{@negotiation.inspect}"
+      Rails.logger.debug "Agreed Price: #{@negotiation&.agreed_price}"
+  
+      # If an agreed price exists, use it; otherwise, fall back to the product price
+      @agreed_price = @negotiation&.agreed_price || @product.price
+    else
+      @agreed_price = @product.price # Default to product price if the user is not signed in or is the store owner
+    end
+  
+    @negotiation ||= @product.negotiations.build(user_id: current_user.id) if user_signed_in?
+  
+    # Fetch all negotiations for display
     @negotiations = @product.negotiations.includes(:user).order(created_at: :asc)
   end
+  
+  
+  
 
   def create_message
     @negotiation = @product.negotiations.build(negotiation_params)

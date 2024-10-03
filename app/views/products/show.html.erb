@@ -6,13 +6,9 @@
       </div>
     <% end %>
 
-    <!-- Make the store name clickable -->
     <h2 class="text-2xl font-bold text-center mt-2"><%= @store.name %></h2>
-
-
     <p class="text-center text-gray-700"><%= @store.description %></p>
 
-    <!-- Add Visit Store button below the store name -->
     <div class="flex justify-center mt-4">
       <%= link_to "Visit Store", store_path(@store), class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
     </div>
@@ -22,6 +18,13 @@
 <h1 class="text-4xl font-bold text-center my-4"><%= @product.name %></h1>
 <p class="text-lg text-gray-700 mb-4"><%= @product.description %></p>
 
+<!-- Agreed Price logic: Display agreed price if set, else use product price -->
+<% price_to_display = @agreed_price || @product.price %>
+<% price_label = @agreed_price ? "Agreed Price" : "Total Price" %>
+
+<p class="text-green-600 font-bold text-2xl"><%= price_label %>: <%= number_to_currency(price_to_display, unit: "₦") %></p>
+
+<!-- If product has variations -->
 <% if @product.has_variations %>
   <h2>Variations</h2>
   <ul class="mb-4">
@@ -41,95 +44,95 @@
     <% end %>
   </ul>
 
-  <% if current_user == @store.user %>
-    <%= link_to "Add New Variation", new_store_product_variation_path(@store, @product), class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
-  <% else %>
-    <%# Add to Cart form with variation selection (for other users) %>
-    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %> 
-      <%= form.hidden_field :product_id, value: @product.id %>
+  <% if current_user != @store.user %>
+  <!-- If not store owner, show Add to Cart form -->
+  <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %>
+    <%= form.hidden_field :product_id, value: @product.id %>
+    <%= form.hidden_field :price, value: price_to_display %>
+
+    <% if @product.has_variations %>
       <%= form.select :variation_id, @product.variations.map { |v| [v.name, v.id] }, {}, class: "border rounded mb-2" %>
+    <% end %>
+
+    <div class="mb-4">
+      <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+      <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+    </div>
+
+    <% if @agreed_price.present? %>
+      <%= form.hidden_field :agreed_price, value: @agreed_price %> <!-- Added agreed_price field -->
+    <% end %>
+
+    <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+  <% end %>
+<% end %>
+
+<% else %>
+  <!-- Display agreed price or default product price -->
+  <p class="text-green-600 font-bold text-2xl"><%= price_label %>: <%= number_to_currency(price_to_display, unit: "₦") %></p>
+
+  <!-- Display product quantity -->
+  <% if @product.quantity.present? %>
+    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: <%= @product.quantity %></p>
+  <% else %>
+    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: Not specified</p>
+  <% end %>
+
+  <% if current_user != @store.user %>
+    <!-- If not store owner, show Add to Cart form -->
+    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %>
+      <%= form.hidden_field :product_id, value: @product.id %>
+      <%= form.hidden_field :price, value: price_to_display %>
+
       <div class="mb-4">
         <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
         <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
       </div>
-
       <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
     <% end %>
   <% end %>
+<% end %>
 
-<% else %>
-  <%# Product without variations %>
-  <p class="text-green-600 font-bold text-2xl">Price: <%= number_to_currency(@product.price, unit: "₦") %></p>
-
-  <% if @product.quantity.present? %>
-    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: <%= @product.quantity %></p>
-  <% else %>
-    <p class="text-gray-600 mt-4" id="product_quantity">Quantity: Not specified</p> 
-  <% end %>
-
-  <% if current_user != @store.user %> <%# Only show to non-store owners %>
-    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %> 
-      <%= form.hidden_field :product_id, value: @product.id %>
-      
-      <%= form.fields_for :line_item, {} do |line_item_fields| %>
-      <% end %>
-      
-      <div class="mb-4"> 
-        <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
-        <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
-      </div>
-
-      <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-    <% end %>
-  <% end %>
-<% end %> 
-
+<!-- Product image -->
 <% if @product.image.attached? %>
   <div class="mt-4">
     <%= image_tag @product.image, class: "w-64 h-64 object-cover rounded-lg shadow-md" %>
   </div>
 <% end %>
 
-<!-- Add negotiation section after the product details -->
-<% unless current_user == @store.user %> <!-- Ensure the store owner doesn't see this section -->
+<!-- If the current user is not the store owner, display negotiation section -->
+<% unless current_user == @store.user %>
   <% if user_signed_in? %>
-    <!-- Display chat box if user is signed in -->
     <div class="mt-8">
-    <h3 class="text-lg font-bold text-center">Negotiate with Store Owner</h3>
-    <%= form_with model: [@store, @product, @negotiation], url: store_product_negotiations_path(@store, @product), method: :post, local: true do |form| %>
-      <div class="mb-4">
-        <%= form.label :message, "Your Message:", class: "block text-gray-700 text-sm font-bold mb-2" %>
-        <%= form.text_area :message, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", placeholder: "Type your message here..." %>
-      </div>
-      <div class="mb-4">
+      <h3 class="text-lg font-bold text-center">Negotiate with Store Owner</h3>
+      <%= form_with model: @negotiation || Negotiation.new, url: store_product_negotiations_path(@store, @product), data: { turbo_stream: true } do |form| %>
+        <div class="mb-4">
+          <%= form.label :message, "Your Message:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+          <%= form.text_area :message, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", placeholder: "Type your message here..." %>
+        </div>
         <%= form.submit "Send Message", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-      </div>
-    <% end %>
+      <% end %>
 
-
-    <!-- Display existing negotiations -->
-    <div class="mt-8">
-      <h3 class="text-lg font-bold text-center">Messages</h3>
-      <div id="messages_list" class="messages-list">
-        <% @negotiations.each do |negotiation| %>
-          <%= render partial: "negotiations/message", locals: { negotiation: negotiation } %>
-        <% end %>
+      <!-- Display messages -->
+      <div class="mt-8">
+        <h3 class="text-lg font-bold text-center">Messages</h3>
+        <div id="messages_list" class="messages-list">
+          <% @negotiations.each do |negotiation| %>
+            <%= render partial: "negotiations/message", locals: { negotiation: negotiation } %>
+          <% end %>
+        </div>
       </div>
     </div>
-  </div>
-
   <% else %>
-    <!-- Display sign-in button and set default role to 'regular' -->
     <div class="mt-8 text-center">
       <p class="text-gray-700">Sign in to chat with the store owner and negotiate.</p>
-      <%= link_to "Sign in to interact", new_user_session_path, data: { turbo_frame: "_top" }, 
-                    class: "text-blue-500 font-bold hover:text-blue-700", 
-                    method: :get, 
-                    params: { return_to: request.fullpath } %>
+      <%= link_to "Sign in to interact", new_user_session_path, data: { turbo_frame: "_top" }, class: "text-blue-500 font-bold hover:text-blue-700" %>
     </div>
   <% end %>
 <% end %>
 
+
+<!-- Store owner can manage product quantities -->
 <% if current_user == @store.user %>
   <%= render 'add_quantity_form', store: @store, product: @product %>
 <% end %>
