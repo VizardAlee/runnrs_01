@@ -13,6 +13,7 @@ class CheckoutsController < ApplicationController
 
   def create
     @cart = current_cart
+    @cart.user = current_user if user_signed_in? 
     @order = Order.new(order_params)
     @order.status = 'unfulfilled'
     @order.user = current_user if user_signed_in?
@@ -311,7 +312,7 @@ class CheckoutsController < ApplicationController
     Rails.logger.debug "Entering process_order with tx_ref: #{tx_ref}"
     @order = Order.find_by(id: tx_ref)
     
-    if @order
+    if @order.save
       @cart = @order.shopping_cart
       Rails.logger.debug "Processing order #{@order.id} with cart #{@cart.id}"
 
@@ -352,6 +353,7 @@ class CheckoutsController < ApplicationController
       Rails.logger.debug "Order processed successfully"
       redirect_to order_confirmation_path(@order), notice: 'Order placed successfully!'
     else
+      Rails.logger.error(order.errors.full_messages)
       Rails.logger.error "Order not found for reference: #{tx_ref}"
       flash[:alert] = "Order not found. Please contact support."
       redirect_to root_path, alert: 'Order not found'

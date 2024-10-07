@@ -30,27 +30,39 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  private
-
   # Logic to manage the current shopping cart, depending on whether the user is signed in or not
   def current_cart
     if user_signed_in?
-      if session[:cart_id]
-        cart = ShoppingCart.find_by(id: session[:cart_id], status: "active")
-        if cart
-          cart.update(user: current_user)
-          session[:cart_id] = nil
-        else
-          cart = ShoppingCart.find_or_create_by(user: current_user, status: "active")
-        end
+      handle_user_cart
+    else
+      handle_guest_cart
+    end
+  end
+
+  private
+
+  def handle_user_cart
+    if session[:cart_id]
+      cart = ShoppingCart.find_by(id: session[:cart_id], status: "active")
+      
+      if cart
+        # Update user only if the cart doesn't already have a user
+        cart.update(user: current_user) if cart.user.nil?
+        session[:cart_id] = nil
       else
         cart = ShoppingCart.find_or_create_by(user: current_user, status: "active")
       end
     else
-      cart = ShoppingCart.find_or_create_by(session_id: session.id.to_s, status: "active")
-      session[:cart_id] ||= cart.id
+      cart = ShoppingCart.find_or_create_by(user: current_user, status: "active")
     end
+  
+    cart
+  end
+  
 
+  def handle_guest_cart
+    cart = ShoppingCart.find_or_create_by(session_id: session.id.to_s, status: "active")
+    session[:cart_id] ||= cart.id
     cart
   end
 

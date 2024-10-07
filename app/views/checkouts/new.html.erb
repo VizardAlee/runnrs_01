@@ -36,7 +36,12 @@
 
 <h2>Shipping & Billing Information</h2>
 <%= form_with(model: @order, url: checkout_path, method: :post) do |form| %>
-  <% if !user_signed_in? %>
+
+  <% if user_signed_in? %>
+    <!-- Hidden field to auto-submit email if user is signed in -->
+    <%= form.hidden_field :email, value: current_user.email %>
+  <% else %>
+    <!-- Show email input field if user is not signed in -->
     <div class="mb-4">
       <%= form.label :email, class: "block text-gray-700 text-sm font-bold mb-2" %>
       <%= form.email_field :email, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
@@ -55,16 +60,15 @@
 
   <h2>Payment Method</h2>
   <div class="mb-4">
-    <%# Placeholder for payment method selection %>
-    <label class="block text-gray-700 text-sm font-bold mb-2">
-      <input type="radio" name="order[payment_method]" value="paystack" checked> Paystack
-    </label>
-    <label class="block text-gray-700 text-sm font-bold mb-2">
-      <input type="radio" name="order[payment_method]" value="flutterwave"> Flutterwave
-    </label>
+    <%= form.radio_button :payment_method, 'paystack', checked: true %>
+    <%= form.label :payment_method_paystack, 'Paystack', class: "inline-block text-gray-700 text-sm font-bold mb-2" %>
+    
+    <%= form.radio_button :payment_method, 'flutterwave' %>
+    <%= form.label :payment_method_flutterwave, 'Flutterwave', class: "inline-block text-gray-700 text-sm font-bold mb-2" %>
   </div>
 
   <div class="flex items-center justify-between">
     <%= form.submit "Place Order", class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
   </div>
+
 <% end %>
