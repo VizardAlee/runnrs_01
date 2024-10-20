@@ -5,7 +5,11 @@ class NegotiationsController < ApplicationController
 
   def accept_offer
     if @negotiation.update(agreed_price: params[:agreed_price])
-      redirect_to store_negotiation_path(@store, @negotiation), notice: "Offer accepted. The customer can now pay #{@negotiation.agreed_price} Naira."
+      if @product.update(negotiated_price: @negotiation.agreed_price, negotiation_expires_at: 24.hours.from_now)
+        redirect_to store_negotiation_path(@store, @negotiation), notice: "Offer accepted. The customer can now pay #{@negotiation.agreed_price} Naira. The price will expire in 24 hours."
+      else
+        redirect_to store_negotiation_path(@store, negotiation), alert: "Failed to set the negotiated price on the product."
+      end
     else
       redirect_to store_negotiation_path(@store, @negotiation), alert: "Failed to accept the offer."
     end

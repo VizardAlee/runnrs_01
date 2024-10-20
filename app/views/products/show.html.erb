@@ -18,11 +18,13 @@
 <h1 class="text-4xl font-bold text-center my-4"><%= @product.name %></h1>
 <p class="text-lg text-gray-700 mb-4"><%= @product.description %></p>
 
-<!-- Agreed Price logic: Display agreed price if set, else use product price -->
-<% price_to_display = @agreed_price || @product.price %>
-<% price_label = @agreed_price ? "Agreed Price" : "Total Price" %>
-
-<p class="text-green-600 font-bold text-2xl"><%= price_label %>: <%= number_to_currency(price_to_display, unit: "₦") %></p>
+<!-- Display price based on negotiated price logic -->
+<% if @product.negotiated_price.present? && @product.negotiation_expires_at > Time.current %>
+  <p class="text-red-600 font-bold text-2xl">Negotiated Price: <%= number_to_currency(@product.negotiated_price, unit: "₦") %></p>
+  <p class="text-gray-600">Expires at: <%= @product.negotiation_expires_at.strftime("%F %T") %></p>
+<% else %>
+  <p class="text-green-600 font-bold text-2xl">Price: <%= number_to_currency(@product.price, unit: "₦") %></p>
+<% end %>
 
 <!-- If product has variations -->
 <% if @product.has_variations %>
@@ -45,31 +47,31 @@
   </ul>
 
   <% if current_user != @store.user %>
-  <!-- If not store owner, show Add to Cart form -->
-  <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %>
-    <%= form.hidden_field :product_id, value: @product.id %>
-    <%= form.hidden_field :price, value: price_to_display %>
+    <!-- If not store owner, show Add to Cart form -->
+    <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %>
+      <%= form.hidden_field :product_id, value: @product.id %>
+      <%= form.hidden_field :price, value: @product.negotiated_price.present? && @product.negotiation_expires_at > Time.current ? @product.negotiated_price : @product.price %>
 
-    <% if @product.has_variations %>
-      <%= form.select :variation_id, @product.variations.map { |v| [v.name, v.id] }, {}, class: "border rounded mb-2" %>
+      <% if @product.has_variations %>
+        <%= form.label :variation_id, "Select Variation:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+        <%= form.select :variation_id, @product.variations.map { |v| [v.name, v.id] }, {}, class: "border rounded mb-2" %>
+      <% end %>
+
+      <div class="mb-4">
+        <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
+        <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      </div>
+
+      <!-- Disable 'Add to Cart' button based on variation quantity -->
+      <div id="add_to_cart_button">
+        <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+      </div>
     <% end %>
-
-    <div class="mb-4">
-      <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
-      <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
-    </div>
-
-    <% if @agreed_price.present? %>
-      <%= form.hidden_field :agreed_price, value: @agreed_price %> <!-- Added agreed_price field -->
-    <% end %>
-
-    <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
   <% end %>
-<% end %>
 
 <% else %>
-  <!-- Display agreed price or default product price -->
-  <p class="text-green-600 font-bold text-2xl"><%= price_label %>: <%= number_to_currency(price_to_display, unit: "₦") %></p>
+  <!-- Display price logic for products without variations -->
+  <p class="text-green-600 font-bold text-2xl"><%= @product.negotiated_price.present? && @product.negotiation_expires_at > Time.current ? 'Negotiated Price' : 'Price' %>: <%= number_to_currency(@product.negotiated_price.present? && @product.negotiation_expires_at > Time.current ? @product.negotiated_price : @product.price, unit: "₦") %></p>
 
   <!-- Display product quantity -->
   <% if @product.quantity.present? %>
@@ -82,13 +84,16 @@
     <!-- If not store owner, show Add to Cart form -->
     <%= form_with url: line_items_path, method: :post, data: { turbo_stream: true } do |form| %>
       <%= form.hidden_field :product_id, value: @product.id %>
-      <%= form.hidden_field :price, value: price_to_display %>
+      <%= form.hidden_field :price, value: @product.negotiated_price.present? && @product.negotiation_expires_at > Time.current ? @product.negotiated_price : @product.price %>
 
       <div class="mb-4">
         <%= form.label :quantity, "Quantity:", class: "block text-gray-700 text-sm font-bold mb-2" %>
         <%= form.number_field :quantity, value: 1, min: 1, class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" %>
       </div>
-      <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+
+      <div id="add_to_cart_button">
+        <%= form.submit "Add to Cart", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+      </div>
     <% end %>
   <% end %>
 <% end %>
@@ -100,7 +105,7 @@
   </div>
 <% end %>
 
-<!-- If the current user is not the store owner, display negotiation section -->
+<!-- Negotiation Section for non-store owners -->
 <% unless current_user == @store.user %>
   <% if user_signed_in? %>
     <div class="mt-8">
@@ -113,7 +118,7 @@
         <%= form.submit "Send Message", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
       <% end %>
 
-      <!-- Display messages -->
+      <!-- Display negotiation messages -->
       <div class="mt-8">
         <h3 class="text-lg font-bold text-center">Messages</h3>
         <div id="messages_list" class="messages-list">
@@ -126,13 +131,40 @@
   <% else %>
     <div class="mt-8 text-center">
       <p class="text-gray-700">Sign in to chat with the store owner and negotiate.</p>
-      <%= link_to "Sign in to interact", new_user_session_path, data: { turbo_frame: "_top" }, class: "text-blue-500 font-bold hover:text-blue-700" %>
+      <%= link_to "Sign in", new_user_session_path, class: "text-blue-500 hover:underline" %>
     </div>
   <% end %>
 <% end %>
 
+<!-- JavaScript to manage button state based on selected variation -->
+<!-- JavaScript to manage button state based on selected variation -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const variationSelect = document.getElementById('variation_select');
+    
+    // Function to check stock before form submission
+    window.checkStock = function() {
+      const selectedVariationId = variationSelect.value;
+      const selectedVariation = <%= raw @product.variations.to_json %>.find(v => v.id == selectedVariationId);
+      const quantityField = document.querySelector('input[name="quantity"]');
+      const quantity = parseInt(quantityField.value, 10);
 
-<!-- Store owner can manage product quantities -->
-<% if current_user == @store.user %>
-  <%= render 'add_quantity_form', store: @store, product: @product %>
-<% end %>
+      // Check stock for the selected variation
+      if (selectedVariation && selectedVariation.quantity <= 0) {
+        alert('Product is out of stock. Please select a different variation or check back later.');
+        return false; // Prevent form submission
+      }
+
+      // Check if the requested quantity exceeds available stock
+      if (selectedVariation && quantity > selectedVariation.quantity) {
+        alert('Requested quantity exceeds available stock. Please reduce the quantity.');
+        return false; // Prevent form submission
+      }
+
+      return true; // Allow form submission
+    };
+    
+    // Initial state check for the first selected variation
+    variationSelect.dispatchEvent(new Event('change'));
+  });
+</script>

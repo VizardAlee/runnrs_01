@@ -1,11 +1,29 @@
 class LineItemsController < ApplicationController
+  before_action :set_product, only: [:create] # Ensure product is set
+
   def create
     @cart = current_cart
-    product = Product.find(params[:product_id])
+
+    # Check if the store exists for the product
+    @store = Store.find_by(id: @product.store_id)
+    unless @store
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace(
+            'flash_messages',
+            partial: 'shared/flash_messages',
+            locals: { alert: 'Store not found for this product.' }
+          )
+        }
+        format.html { redirect_to root_path, alert: 'Store not found for this product.' }
+      end
+      return
+    end
+
     variation = Variation.find_by(id: params[:variation_id]) if params[:variation_id]
-
+    
     quantity = params[:quantity].to_i
-
+  
     # Ensure quantity is valid
     if quantity <= 0
       respond_to do |format|
@@ -16,28 +34,59 @@ class LineItemsController < ApplicationController
             locals: { alert: 'Please enter a valid quantity.' }
           )
         }
-        format.html { redirect_to product_path(product), alert: 'Please enter a valid quantity.' }
+        format.html { redirect_to product_path(product.id), alert: 'Please enter a valid quantity.' }
       end
       return
     end
-
+  
+    # Check available stock before adding to cart
+    if variation
+      if variation.quantity < quantity
+        respond_to do |format|
+          format.turbo_stream {
+            render turbo_stream: turbo_stream.replace(
+              'flash_messages',
+              partial: 'shared/flash_messages',
+              locals: { alert: 'Not enough stock for this variation.' }
+            )
+          }
+          format.html { redirect_to product_path(@product.id), alert: 'Not enough stock for this variation.' }
+        end
+        return
+      end
+    else
+      if product.quantity < quantity
+        respond_to do |format|
+          format.turbo_stream {
+            render turbo_stream: turbo_stream.replace(
+              'flash_messages',
+              partial: 'shared/flash_messages',
+              locals: { alert: 'Not enough stock for this product.' }
+            )
+          }
+          format.html { redirect_to product_path(product.id), alert: 'Not enough stock for this product.' }
+        end
+        return
+      end
+    end
+  
     # Calculate the price based on agreed price, variation or product
     agreed_price = params[:agreed_price].present? ? params[:agreed_price].to_f : nil
     price = agreed_price || (variation ? variation.price : product.price)
-
+  
     # Build the line_item with the calculated price
     @line_item = @cart.line_items.build(product: product, variation: variation, quantity: quantity, price: price)
-
+  
     if @line_item.save
-      # Update stock within a transaction 
+      # Update stock within a transaction
       ActiveRecord::Base.transaction do
         if variation
           variation.decrement!(:quantity, quantity)
         else
           product.decrement!(:quantity, quantity)
         end
-      end 
-
+      end
+  
       respond_to do |format|
         format.turbo_stream { 
           render turbo_stream: [
@@ -57,10 +106,11 @@ class LineItemsController < ApplicationController
             locals: { alert: @line_item.errors.full_messages.to_sentence }
           )
         }
-        format.html { redirect_to product_path(product), alert: @line_item.errors.full_messages.to_sentence }
+        format.html { redirect_to product_path(product.id), alert: @line_item.errors.full_messages.to_sentence }
       end
     end
   end
+  
 
   def destroy
     @line_item = LineItem.find(params[:id])
@@ -85,6 +135,10 @@ class LineItemsController < ApplicationController
   end
 
   private
+
+  def set_product
+    @product = Product.find(params[:product_id])
+  end
 
   def line_item_params
     params.require(:line_item).permit(:product_id, :variation_id, :quantity, :price) 

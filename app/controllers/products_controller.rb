@@ -5,7 +5,7 @@ class ProductsController < ApplicationController
   skip_before_action :set_store, only: [:search]
 
   def index
-    @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 9)
+    @products = Product.order("RANDOM()").paginate(page: params[:page], per_page: 7)
   end
 
   def new
@@ -49,20 +49,27 @@ class ProductsController < ApplicationController
   
     # Find the product within the store
     @product = @store.products.find(params[:id])
+
+    # Check if product or variation quantity is zero or less
+    @can_add_to_cart = @product.quantity > 0
   
     # Check if the user is signed in and not the store owner
     if user_signed_in? && current_user != @store.user
       @negotiation = @product.negotiations.find_by(user_id: current_user.id) # Ensure we're querying by user_id
   
-      Rails.logger.debug "Negotiation found: #{@negotiation.inspect}"
+      Rails.logger.debug "N
+      egotiation found: #{@negotiation.inspect}"
       Rails.logger.debug "Agreed Price: #{@negotiation&.agreed_price}"
   
       # If an agreed price exists, use it; otherwise, fall back to the product price
       @agreed_price = @negotiation&.agreed_price || @product.price
+      @price_label = @negotiation&.agreed_price ? "Agreed Price" : "Product Price"
     else
       @agreed_price = @product.price # Default to product price if the user is not signed in or is the store owner
+      @price_label = "Product Price"
     end
   
+    @price_to_display = @agreed_price
     @negotiation ||= @product.negotiations.build(user_id: current_user.id) if user_signed_in?
   
     # Fetch all negotiations for display
@@ -137,7 +144,10 @@ class ProductsController < ApplicationController
   private
 
   def set_store
-    @store = Store.find_by(id: params[:store_id])
+    @product = Product.find(params[:id])
+    @store = Store.find_by(id: @product.store_id)
+    
+    puts "Product ID: #{@product.id}"
     puts "Store ID: #{params[:store_id]}"
     puts "Store: #{@store.inspect}"
     if @store.nil?

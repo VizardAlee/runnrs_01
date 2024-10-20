@@ -47,7 +47,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :products, only: [:index]
+  resources :products, only: [:index, :show]
   
   get 'checkout', to: 'checkouts#new', as: 'checkout'
   post 'checkout', to: 'checkouts#create'

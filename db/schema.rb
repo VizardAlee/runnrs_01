@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_10_03_104056) do
+ActiveRecord::Schema[7.1].define(version: 2024_10_07_083812) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -118,6 +118,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_10_03_104056) do
     t.decimal "price"
     t.boolean "has_variations", default: false
     t.integer "quantity", default: 0
+    t.decimal "negotiated_price", precision: 10, scale: 2
+    t.datetime "negotiation_expires_at"
     t.index ["store_id"], name: "index_products_on_store_id"
   end
 
